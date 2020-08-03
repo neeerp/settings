@@ -1,0 +1,5 @@
+{
+    "suggest.labelMaxLength": 30,
+    "suggest.detailMaxLength": 30,
+    "suggest.floatEnable": true // This is the one we want!
+}
