@@ -237,6 +237,10 @@ nmap <silent> gy <Plug>(coc-type-definition)
 nmap <silent> gi <Plug>(coc-implementation)
 nmap <silent> gr <Plug>(coc-references)
 
+" GoTo Diagnostics (Errors/Warnings)
+nmap <silent> <c-y> <Plug>(coc-diagnostic-next)
+nmap <silent> <c-Y> <Plug>(coc-diagnostic-prev)
+
 " Popup doc on cursor
 nnoremap <silent> <C-e> :call <SID>show_documentation()<CR>
 
