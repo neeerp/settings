@@ -1,30 +1,42 @@
 syntax on
 
-set noerrorbells
 set tabstop=4 softtabstop=4
 set shiftwidth=4
 set expandtab
 set smartindent
-set nu
 set nowrap
-set smartcase
+
+set splitbelow
+
 set noswapfile
 set nobackup
 set undodir=~/.vim/undodir
 set undofile
-set incsearch
-set mouse=a
-set splitbelow
-
-set updatetime=300
 set shortmess+=c
+
+" Incremental, contextually case sensitive search
+set incsearch
+set smartcase
+set ignorecase
+
+set mouse=a
+set noerrorbells
+
+" Snappier pop ups on hover
+set updatetime=300
+
 set cmdheight=1
+set hidden
 
-" Relative line numbers good
+" Hybrid Absolute/Relative line numbers
+set number
 set relativenumber
-set colorcolumn=80
 
-" Show signcolumn always
+" 80 character marker
+set colorcolumn=80
+highlight ColorColumn ctermbg=0 guibg=lightgrey
+
+" Show signcolumn always - This is where the errors/warnings appear
 if has("patch-8.1.1564")
   " Recently vim can merge signcolumn and number column into one
   set signcolumn=number
@@ -32,12 +44,12 @@ else
   set signcolumn=yes
 endif
 
-" let g:float_preview#docked = 0
+" Set leader key to space
+let mapleader = " "
 
-highlight ColorColumn ctermbg=0 guibg=lightgrey
 
 call plug#begin('~/.vim/plugged')
-
+" Themes
 Plug 'morhetz/gruvbox'
 Plug 'edkolev/promptline.vim'
 Plug 'drewtempelmeyer/palenight.vim'
@@ -52,31 +64,35 @@ Plug 'vim-airline/vim-airline-themes'
 Plug 'itchyny/lightline.vim'
 Plug 'shinchu/lightline-gruvbox.vim'
 
-" Plug 'ncm2/float-preview.nvim'
-
+" FS Explorer
 Plug 'preservim/nerdtree'
 
+" Comfortable searching
 Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
 Plug 'junegunn/fzf.vim'
-Plug 'tpope/vim-fugitive'
-Plug 'tpope/vim-surround'
-Plug 'tpope/vim-repeat'
 Plug 'jremmen/vim-ripgrep'
-Plug 'vim-utils/vim-man'
+
+" Autocomplete, Language servers, and much much more
+Plug 'neoclide/coc.nvim', { 'branch': 'master', 'do': 'yarn install --frozen-lockfile' }
 Plug 'lyuts/vim-rtags'
-" Plug 'ycm-core/YouCompleteMe'
+
+" Git in vim
+Plug 'tpope/vim-fugitive'
+
+" Undo tree git style
 Plug 'mbbill/undotree'
 
-Plug 'neoclide/coc.nvim', { 'branch': 'master', 'do': 'yarn install --frozen-lockfile' }
+" Comment out lines, Selectors for objects, '.' compatibility with plugins
+Plug 'tpope/vim-surround'
+Plug 'tpope/vim-commentary'
+Plug 'tpope/vim-repeat'
 
-" Plug 'nathanaelkane/vim-indent-guides'
+" Toggleable indentation guides
 Plug 'Yggdroot/indentLine'
 
-" God bless easy commenting in/out
-Plug 'tpope/vim-commentary'
-
-" Terminal
+" Utility
 Plug 'kassio/neoterm'
+Plug 'vim-utils/vim-man'
 
 call plug#end()
 
@@ -118,7 +134,6 @@ if executable('rg')
     let g:rg_derive_root='true'
 endif
 
-let mapleader = " "
 
 " let g:ctrlp_user_command = ['.git/', 'git --git-dir=%s/.git ls-files -oc --exclude-standard']
 let g:netrw_browse_split = 2
@@ -131,11 +146,10 @@ let g:ctrlp_use_caching = 0
 " Undo tree
 nnoremap <leader>u :UndotreeShow<CR>
 
-" Project viewer
+" Project viewer and search hotkeys
 nnoremap <leader>pv :wincmd v<bar> :NERDTree <bar> :vertical resize 20<CR>
-
-" Project search
 nnoremap <leader>ps :Rg<SPACE>
+let NERDTreeMinimalUI=1
 
 " Window resize
 nnoremap <silent> <leader>= :vertical resize +5<CR>
@@ -143,7 +157,7 @@ nnoremap <silent> <leader>- :vertical resize -5<CR>
 nnoremap <silent> <leader>+ :resize +5<CR>
 nnoremap <silent> <leader>_ :resize -5<CR>
 
-" fugitive
+" fugitive (Status, Select right, Select left)
 nmap <leader>gs :G<CR>
 nmap <leader>gj :diffget //3<CR>
 nmap <leader>gf :diffget //2<CR>
@@ -160,11 +174,8 @@ augroup highlight_yank
     autocmd TextYankPost * silent! lua require'vim.highlight'.on_yank()
 augroup END
 
-" NERDtree
-let NERDTreeMinimalUI=1
 
 " Indent Guides
-" let g:indent_guides_enable_on_vim_startup = 1
 let g:indentLine_char = '▏'
 let g:indentLine_enabled = 0
 let g:indentLine_setColors = 0
@@ -215,6 +226,7 @@ endfunction
 
 """""""""""""""""""""""""""""""""'
 " COC
+let g:coc_start_at_startup = 1
 
 " Highlight the symbol and its references when holding the cursor.
 autocmd CursorHold * silent call CocActionAsync('highlight')
@@ -225,30 +237,19 @@ nmap <silent> gy <Plug>(coc-type-definition)
 nmap <silent> gi <Plug>(coc-implementation)
 nmap <silent> gr <Plug>(coc-references)
 
-" Popup Docs
+" Popup doc on cursor
 nnoremap <silent> <C-e> :call <SID>show_documentation()<CR>
 
-function! s:show_documentation()
-  if (index(['vim','help'], &filetype) >= 0)
-    execute 'h '.expand('<cword>')
-  else
-    call CocAction('doHover')
-  endif
-endfunction
+" Navigate autocomplete menus more intuitively
+inoremap <expr> <C-j> pumvisible() ? "\<C-N>" : "<C-j>"
+inoremap <expr> <C-k> pumvisible() ? "\<C-P>" : "<C-k>"
 
 " Use tab for trigger completion with characters ahead and navigate.
-" NOTE: Use command ':verbose imap <tab>' to make sure tab is not mapped by
-" other plugin before putting this into your config.
 inoremap <silent><expr> <TAB>
       \ pumvisible() ? "\<C-n>" :
       \ <SID>check_back_space() ? "\<TAB>" :
       \ coc#refresh()
 inoremap <expr><S-TAB> pumvisible() ? "\<C-p>" : "\<C-h>"
-
-function! s:check_back_space() abort
-  let col = col('.') - 1
-  return !col || getline('.')[col - 1]  =~# '\s'
-endfunction
 
 " Use <cr> to confirm completion, `<C-g>u` means break undo chain at current
 " position. Coc only does snippet and additional edit on confirm.
@@ -260,9 +261,17 @@ else
 endif
 
 
-let g:coc_start_at_startup = 1
-set hidden
+"" Helpers
+function! s:show_documentation()
+  if (index(['vim','help'], &filetype) >= 0)
+    execute 'h '.expand('<cword>')
+  else
+    call CocAction('doHover')
+  endif
+endfunction
 
-inoremap <expr> <C-j> pumvisible() ? "\<C-N>" : "<C-j>"
-inoremap <expr> <C-k> pumvisible() ? "\<C-P>" : "<C-k>"
+function! s:check_back_space() abort
+  let col = col('.') - 1
+  return !col || getline('.')[col - 1]  =~# '\s'
+endfunction
 
