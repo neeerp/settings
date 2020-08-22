@@ -1,5 +1,16 @@
 {
     "suggest.labelMaxLength": 30,
     "suggest.detailMaxLength": 30,
-    "suggest.floatEnable": true // This is the one we want!
+    "suggest.floatEnable": true, // This is the one we want!
+    "sql.database": "postgresql",
+
+    "codeLens.enable": true,
+    "diagnostic.errorSign": "✘",
+    "diagnostic.checkCurrentLine": true,
+
+    "coc.preferences.formatOnSaveFiletypes": ["rust", "toml"],
+
+    "yank": {
+        "highlight.duration": 125
+    }
 }

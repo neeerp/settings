@@ -5,6 +5,8 @@ set shiftwidth=4
 set expandtab
 set smartindent
 set nowrap
+set scrolloff=4
+set sidescrolloff=4
 
 set splitbelow
 
@@ -49,6 +51,7 @@ let mapleader = " "
 
 
 call plug#begin('~/.vim/plugged')
+
 " Themes
 Plug 'morhetz/gruvbox'
 Plug 'edkolev/promptline.vim'
@@ -61,23 +64,23 @@ Plug 'NLKNguyen/papercolor-theme'
 
 Plug 'vim-airline/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
-Plug 'itchyny/lightline.vim'
-Plug 'shinchu/lightline-gruvbox.vim'
+
+Plug 'ryanoasis/vim-devicons'
 
 " FS Explorer
 Plug 'preservim/nerdtree'
 
-" Comfortable searching
+" Search
 Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
 Plug 'junegunn/fzf.vim'
 Plug 'jremmen/vim-ripgrep'
 
 " Autocomplete, Language servers, and much much more
 Plug 'neoclide/coc.nvim', { 'branch': 'master', 'do': 'yarn install --frozen-lockfile' }
-Plug 'lyuts/vim-rtags'
 
 " Git in vim
 Plug 'tpope/vim-fugitive'
+Plug 'airblade/vim-gitgutter'
 
 " Undo tree git style
 Plug 'mbbill/undotree'
@@ -90,6 +93,13 @@ Plug 'tpope/vim-repeat'
 " Toggleable indentation guides
 Plug 'Yggdroot/indentLine'
 
+"LaTeX preview
+Plug 'lervag/vimtex'
+Plug 'xuhdev/vim-latex-live-preview', { 'for': 'tex' }
+
+" Markdown Preview
+Plug 'iamcco/markdown-preview.nvim', { 'do': 'cd app & yarn install'  }
+
 " Utility
 Plug 'kassio/neoterm'
 Plug 'vim-utils/vim-man'
@@ -101,47 +111,14 @@ set termguicolors
 set t_Co=256
 
 let g:airline_powerline_fonts = 1
-let g:lightline = {}
-
-" colorscheme palenight
 
 " Gruvbox theme
 colorscheme gruvbox
 set background=dark
 
-let g:airline_theme='gruvbox'
-let g:lightline.colorscheme = 'gruvbox'
-
-
-" PaperColor theme
-" colorscheme PaperColor
-" set background=light
-
-" let g:PaperColor_ThemeOptions = {
-"   \   'theme': {
-"   \     'default': {
-"   \       'transparent_background': 1,
-"   \       'allow_bold': 1,
-"   \       'allow_italic': 1
-"   \     }
-"   \   }
-"   \ }
-
-" let g:airline_theme='papercolor'
-" let g:lightline = {'colorscheme': 'PaperColor',}
-
 if executable('rg')
     let g:rg_derive_root='true'
 endif
-
-
-" let g:ctrlp_user_command = ['.git/', 'git --git-dir=%s/.git ls-files -oc --exclude-standard']
-let g:netrw_browse_split = 2
-let g:netrw_banner = 0
-let g:netrw_winsize = 25
-
-let g:ctrlp_use_caching = 0
-
 
 " Undo tree
 nnoremap <leader>u :UndotreeShow<CR>
@@ -150,6 +127,8 @@ nnoremap <leader>u :UndotreeShow<CR>
 nnoremap <leader>pv :wincmd v<bar> :NERDTree <bar> :vertical resize 20<CR>
 nnoremap <leader>ps :Rg<SPACE>
 let NERDTreeMinimalUI=1
+
+let NERDTreeIgnore=['\.aux$', '\.fdb_latexmk$', '\.fls$', '\.out$', '\.synctex.gz$', '\.*.xdv$', 'target']
 
 " Window resize
 nnoremap <silent> <leader>= :vertical resize +5<CR>
@@ -163,17 +142,10 @@ nmap <leader>gj :diffget //3<CR>
 nmap <leader>gf :diffget //2<CR>
 
 " fzf
-nnoremap <C-p> :GFiles<CR>
 nnoremap <leader>pf :Files<CR>
+nnoremap <C-p> :GFiles<CR>
 let g:fzf_layout = { 'window': { 'width': 0.8, 'height': 0.8 } }
 let $FZF_DEFAULT_OPTS='--reverse'
-
-" highlight yanks!
-augroup highlight_yank
-    autocmd!
-    autocmd TextYankPost * silent! lua require'vim.highlight'.on_yank()
-augroup END
-
 
 " Indent Guides
 let g:indentLine_char = '▏'
@@ -244,6 +216,9 @@ nmap <silent> <c-Y> <Plug>(coc-diagnostic-prev)
 " Popup doc on cursor
 nnoremap <silent> <C-e> :call <SID>show_documentation()<CR>
 
+" Rename symbol
+nmap <leader>rn <Plug>(coc-rename)
+
 " Navigate autocomplete menus more intuitively
 inoremap <expr> <C-j> pumvisible() ? "\<C-N>" : "<C-j>"
 inoremap <expr> <C-k> pumvisible() ? "\<C-P>" : "<C-k>"
@@ -264,6 +239,23 @@ else
   inoremap <expr> <cr> pumvisible() ? "\<C-y>" : "\<C-g>u\<CR>"
 endif
 
+" Applying codeAction to the selected region.
+" Example: `<leader>aap` for current paragraph
+xmap <leader>a  <Plug>(coc-codeaction-selected)
+nmap <leader>a  <Plug>(coc-codeaction-selected)
+
+nmap <silent> <leader>ff :call CocAction('format')<Cr>
+
+" Remap keys for applying codeAction to the current buffer.
+nmap <leader>ac  <Plug>(coc-codeaction)
+" Apply AutoFix to problem on the current line.
+nmap <leader>qf  <Plug>(coc-fix-current) 
+
+" Add `:Fold` command to fold current buffer.
+command! -nargs=? Fold :call     CocAction('fold', <f-args>)
+
+" Add `:OR` command for organize imports of the current buffer.
+command! -nargs=0 OR   :call     CocAction('runCommand', 'editor.action.organizeImport')
 
 "" Helpers
 function! s:show_documentation()
@@ -279,3 +271,19 @@ function! s:check_back_space() abort
   return !col || getline('.')[col - 1]  =~# '\s'
 endfunction
 
+" LaTeX
+
+let g:tex_flavor = 'latex'
+let g:Tex_DefaultTargetFormat='pdf'
+let g:Tex_CompileRule_pdf='pdflatex'
+if has('nvim')
+  let g:vimtex_compiler_progname = 'nvr'
+endif
+
+
+"""""""""""""""""""""""""""""""""'
+" Markdown
+
+" nnoremap <leader>mp <Plug>MarkdownPreview
+" nnoremap <leader>ms <Plug>MarkdownPreviewStop
+nmap <leader>mp <Plug>MarkdownPreviewToggle
